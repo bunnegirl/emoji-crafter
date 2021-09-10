@@ -188,153 +188,153 @@ impl TrimRect {
 }
 
 fn main() {
-    let (squared_dir, trimmed_dir) = setup_directories();
+    // let (squared_dir, trimmed_dir) = setup_directories();
 
-    let data = include_str!("emoji.svg");
-    let mut doc = Element::parse(data.as_bytes()).unwrap();
-    let emojis: Vec<Emoji> = doc.children.iter().filter_map(load_emojis).collect();
+    // let data = include_str!("emoji.svg");
+    // let mut doc = Element::parse(data.as_bytes()).unwrap();
+    // let emojis: Vec<Emoji> = doc.children.iter().filter_map(load_emojis).collect();
 
-    // Replace stylesheet:
-    let mut stylesheet = doc.get_mut_child("style").unwrap();
+    // // Replace stylesheet:
+    // let mut stylesheet = doc.get_mut_child("style").unwrap();
 
-    stylesheet.children = vec![XMLNode::Text(include_str!("../themes/bunne.css").into())];
+    // stylesheet.children = vec![XMLNode::Text(include_str!("../themes/bunne.css").into())];
 
-    let mut buf = Vec::new();
-    doc.write(&mut buf).unwrap();
+    // let mut buf = Vec::new();
+    // doc.write(&mut buf).unwrap();
 
-    let data = String::from_utf8(buf).unwrap();
-    let mut opt = usvg::Options::default();
+    // let data = String::from_utf8(buf).unwrap();
+    // let mut opt = usvg::Options::default();
 
-    opt.keep_named_groups = true;
+    // opt.keep_named_groups = true;
 
-    emojis.par_iter().for_each(|emoji| {
-        let rtree = usvg::Tree::from_data(data.as_bytes(), &opt.to_ref()).unwrap();
+    // emojis.par_iter().for_each(|emoji| {
+    //     let rtree = usvg::Tree::from_data(data.as_bytes(), &opt.to_ref()).unwrap();
 
-        match emoji.clone() {
-            Emoji::Static { name, id } => {
-                let id = id.unwrap();
-                let node = rtree.node_by_id(&id).unwrap();
-                let mut pixmap = Pixmap::new(326, 326).unwrap();
+    //     match emoji.clone() {
+    //         Emoji::Static { name, id } => {
+    //             let id = id.unwrap();
+    //             let node = rtree.node_by_id(&id).unwrap();
+    //             let mut pixmap = Pixmap::new(326, 326).unwrap();
 
-                resvg::render_node(&rtree, &node, usvg::FitTo::Size(326, 326), pixmap.as_mut())
-                    .unwrap();
+    //             resvg::render_node(&rtree, &node, usvg::FitTo::Size(326, 326), pixmap.as_mut())
+    //                 .unwrap();
 
-                // Save squared version:
-                pixmap
-                    .save_png(squared_dir.join(format!("bunne{}.png", name)))
-                    .unwrap();
+    //             // Save squared version:
+    //             pixmap
+    //                 .save_png(squared_dir.join(format!("bunne{}.png", name)))
+    //                 .unwrap();
 
-                // Save trimmed version:
-                let (_, _, pixmap) = trim_transparency(pixmap).unwrap();
+    //             // Save trimmed version:
+    //             let (_, _, pixmap) = trim_transparency(pixmap).unwrap();
 
-                pixmap
-                    .save_png(trimmed_dir.join(format!("bunne{}.png", name)))
-                    .unwrap();
-            }
-            Emoji::Animated { name, frames, .. } => {
-                let mut image_rect = TrimRect::new(326, 326);
+    //             pixmap
+    //                 .save_png(trimmed_dir.join(format!("bunne{}.png", name)))
+    //                 .unwrap();
+    //         }
+    //         Emoji::Animated { name, frames, .. } => {
+    //             let mut image_rect = TrimRect::new(326, 326);
 
-                let frames: Vec<_> = frames
-                    .iter()
-                    .map(|frame| {
-                        let id = frame.id.as_ref().unwrap();
-                        let node = rtree.node_by_id(&id).unwrap();
-                        let mut pixmap = Pixmap::new(326, 326).unwrap();
+    //             let frames: Vec<_> = frames
+    //                 .iter()
+    //                 .map(|frame| {
+    //                     let id = frame.id.as_ref().unwrap();
+    //                     let node = rtree.node_by_id(&id).unwrap();
+    //                     let mut pixmap = Pixmap::new(326, 326).unwrap();
 
-                        resvg::render_node(
-                            &rtree,
-                            &node,
-                            usvg::FitTo::Size(326, 326),
-                            pixmap.as_mut(),
-                        )
-                        .unwrap();
+    //                     resvg::render_node(
+    //                         &rtree,
+    //                         &node,
+    //                         usvg::FitTo::Size(326, 326),
+    //                         pixmap.as_mut(),
+    //                     )
+    //                     .unwrap();
 
-                        image_rect.expand(&pixmap);
+    //                     image_rect.expand(&pixmap);
 
-                        (frame, pixmap)
-                    })
-                    .collect();
+    //                     (frame, pixmap)
+    //                 })
+    //                 .collect();
 
-                let rect = tiny_skia::IntRect::from_ltrb(
-                    image_rect.left,
-                    image_rect.top,
-                    image_rect.right,
-                    image_rect.bottom,
-                )
-                .unwrap();
+    //             let rect = tiny_skia::IntRect::from_ltrb(
+    //                 image_rect.left,
+    //                 image_rect.top,
+    //                 image_rect.right,
+    //                 image_rect.bottom,
+    //             )
+    //             .unwrap();
 
-                let mut squared_encoder = Encoder::new((326, 326)).unwrap();
-                let mut trimmed_encoder =
-                    Encoder::new((rect.width() as u32, rect.height() as u32)).unwrap();
-                let mut timestamp: i32 = 0;
-                let mut squared_gif =
-                    File::create(squared_dir.join(format!("bunne{}.gif", name))).unwrap();
-                let mut squared_gif_encoder =
-                    gif::Encoder::new(&mut squared_gif, 326, 326, &[]).unwrap();
-                let mut trimmed_gif =
-                    File::create(trimmed_dir.join(format!("bunne{}.gif", name))).unwrap();
-                let mut trimmed_gif_encoder = gif::Encoder::new(
-                    &mut trimmed_gif,
-                    rect.width() as u16,
-                    rect.height() as u16,
-                    &[],
-                )
-                .unwrap();
+    //             let mut squared_encoder = Encoder::new((326, 326)).unwrap();
+    //             let mut trimmed_encoder =
+    //                 Encoder::new((rect.width() as u32, rect.height() as u32)).unwrap();
+    //             let mut timestamp: i32 = 0;
+    //             let mut squared_gif =
+    //                 File::create(squared_dir.join(format!("bunne{}.gif", name))).unwrap();
+    //             let mut squared_gif_encoder =
+    //                 gif::Encoder::new(&mut squared_gif, 326, 326, &[]).unwrap();
+    //             let mut trimmed_gif =
+    //                 File::create(trimmed_dir.join(format!("bunne{}.gif", name))).unwrap();
+    //             let mut trimmed_gif_encoder = gif::Encoder::new(
+    //                 &mut trimmed_gif,
+    //                 rect.width() as u16,
+    //                 rect.height() as u16,
+    //                 &[],
+    //             )
+    //             .unwrap();
 
-                squared_gif_encoder
-                    .set_repeat(gif::Repeat::Infinite)
-                    .unwrap();
+    //             squared_gif_encoder
+    //                 .set_repeat(gif::Repeat::Infinite)
+    //                 .unwrap();
 
-                trimmed_gif_encoder
-                    .set_repeat(gif::Repeat::Infinite)
-                    .unwrap();
+    //             trimmed_gif_encoder
+    //                 .set_repeat(gif::Repeat::Infinite)
+    //                 .unwrap();
 
-                for (frame, mut squared) in frames {
-                    squared_encoder
-                        .add_frame(squared.data(), timestamp)
-                        .unwrap();
+    //             for (frame, mut squared) in frames {
+    //                 squared_encoder
+    //                     .add_frame(squared.data(), timestamp)
+    //                     .unwrap();
 
-                    let mut gif_frame =
-                        gif::Frame::from_rgba_speed(326, 326, squared.data_mut(), 30);
+    //                 let mut gif_frame =
+    //                     gif::Frame::from_rgba_speed(326, 326, squared.data_mut(), 30);
 
-                    gif_frame.dispose = gif::DisposalMethod::Background;
-                    gif_frame.delay = (frame.delay / 10) as u16;
+    //                 gif_frame.dispose = gif::DisposalMethod::Background;
+    //                 gif_frame.delay = (frame.delay / 10) as u16;
 
-                    squared_gif_encoder.write_frame(&gif_frame).unwrap();
+    //                 squared_gif_encoder.write_frame(&gif_frame).unwrap();
 
-                    let mut trimmed = squared.clone_rect(rect.clone()).unwrap();
+    //                 let mut trimmed = squared.clone_rect(rect.clone()).unwrap();
 
-                    trimmed_encoder
-                        .add_frame(trimmed.data(), timestamp)
-                        .unwrap();
+    //                 trimmed_encoder
+    //                     .add_frame(trimmed.data(), timestamp)
+    //                     .unwrap();
 
-                    let mut gif_frame = gif::Frame::from_rgba_speed(
-                        rect.width() as u16,
-                        rect.height() as u16,
-                        trimmed.data_mut(),
-                        30,
-                    );
+    //                 let mut gif_frame = gif::Frame::from_rgba_speed(
+    //                     rect.width() as u16,
+    //                     rect.height() as u16,
+    //                     trimmed.data_mut(),
+    //                     30,
+    //                 );
 
-                    gif_frame.dispose = gif::DisposalMethod::Background;
-                    gif_frame.delay = (frame.delay / 10) as u16;
+    //                 gif_frame.dispose = gif::DisposalMethod::Background;
+    //                 gif_frame.delay = (frame.delay / 10) as u16;
 
-                    trimmed_gif_encoder.write_frame(&gif_frame).unwrap();
+    //                 trimmed_gif_encoder.write_frame(&gif_frame).unwrap();
 
-                    timestamp += frame.delay;
-                }
+    //                 timestamp += frame.delay;
+    //             }
 
-                // Save squared version:
-                let webp_data = squared_encoder.finalize(timestamp).unwrap();
-                let webp_file = squared_dir.join(format!("bunne{}.webp", name));
+    //             // Save squared version:
+    //             let webp_data = squared_encoder.finalize(timestamp).unwrap();
+    //             let webp_file = squared_dir.join(format!("bunne{}.webp", name));
 
-                std::fs::write(&webp_file, &webp_data).unwrap();
+    //             std::fs::write(&webp_file, &webp_data).unwrap();
 
-                // Save trimmed version:
-                let webp_data = trimmed_encoder.finalize(timestamp).unwrap();
-                let webp_file = trimmed_dir.join(format!("bunne{}.webp", name));
+    //             // Save trimmed version:
+    //             let webp_data = trimmed_encoder.finalize(timestamp).unwrap();
+    //             let webp_file = trimmed_dir.join(format!("bunne{}.webp", name));
 
-                std::fs::write(&webp_file, &webp_data).unwrap();
-            }
-        }
-    });
+    //             std::fs::write(&webp_file, &webp_data).unwrap();
+    //         }
+    //     }
+    // });
 }
