@@ -1,7 +1,4 @@
-mod new;
-mod project;
-mod run;
-
+use emoji_crafter::*;
 use structopt::StructOpt;
 
 /// Create, manage and export emojis
