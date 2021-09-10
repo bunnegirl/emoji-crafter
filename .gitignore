@@ -1,0 +1,6 @@
+/themes/*/tmp
+
+
+# Added by cargo
+
+/target
