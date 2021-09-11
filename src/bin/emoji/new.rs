@@ -1,12 +1,12 @@
-use crate::project::*;
-use std::{fs::create_dir_all, path::PathBuf, str::FromStr};
+use crate::manifest::*;
+use std::{fs::create_dir_all, path::PathBuf};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
 pub struct Command {
     /// Name of the project
     #[structopt(name = "name")]
-    #[structopt(parse(try_from_str = ProjectPath::validate))]
+    #[structopt(parse(try_from_str = NewProjectPath::validate))]
     path: PathBuf,
 }
 
@@ -22,7 +22,7 @@ impl Command {
 
         create_dir_all(&theme_path).unwrap();
 
-        let emojiset_source = path
+        let emojiset_document = path
             .join("emojiset.svg")
             .strip_prefix(&path)
             .unwrap()
@@ -39,23 +39,33 @@ impl Command {
             .unwrap()
             .to_path_buf();
 
-        touch(&path.join(&emojiset_source)).unwrap();
+        touch(&path.join(&emojiset_document)).unwrap();
         touch(&path.join(&emojiset_stylesheet)).unwrap();
         touch(&path.join(&theme_stylesheet)).unwrap();
 
+        let outputs = vec![
+            Output {
+                trim: false,
+                directory: path.join("original"),
+            },
+            Output {
+                trim: true,
+                directory: path.join("trimmed"),
+            },
+        ];
         let themes = vec![Theme {
             name: name.clone(),
             stylesheet: theme_stylesheet,
         }];
         let emojiset = Emojiset {
             name: name.clone(),
-            // version: lenient_semver::parse("0.1").unwrap(),
-            source: emojiset_source,
+            document: emojiset_document,
             stylesheet: emojiset_stylesheet,
         };
         let project = Project {
             path: path.clone(),
             emojiset,
+            outputs,
             themes,
         };
 
@@ -73,41 +83,5 @@ fn touch(path: &PathBuf) -> std::io::Result<()> {
     {
         Ok(_) => Ok(()),
         Err(e) => Err(e),
-    }
-}
-
-#[derive(Debug)]
-enum ProjectPath {
-    AlreadyExists,
-    InvalidName,
-}
-
-impl ProjectPath {
-    fn validate(name: &str) -> Result<PathBuf, ProjectPath> {
-        use ProjectPath::*;
-
-        match PathBuf::from_str(name) {
-            // We should not be able to canonicalize the path as it should not already exist
-            Ok(path) => match path.canonicalize() {
-                Ok(_) => Err(AlreadyExists),
-                // The path must have a file stem to use as the project name
-                Err(_) => match path.file_stem() {
-                    Some(_) => Ok(path),
-                    None => Err(InvalidName),
-                },
-            },
-            Err(_) => Err(InvalidName),
-        }
-    }
-}
-
-impl std::fmt::Display for ProjectPath {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use ProjectPath::*;
-
-        match self {
-            AlreadyExists => write!(f, "directory already exists, try using `init`"),
-            InvalidName => write!(f, "could not create the project directory"),
-        }
     }
 }
