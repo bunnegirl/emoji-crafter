@@ -165,6 +165,8 @@ pub fn render_animation(
     let webp_path = dir.join(format!("{}{}.webp", theme.prefix, emoji.name().unwrap()));
     let gif_path = dir.join(format!("{}{}.gif", theme.prefix, emoji.name().unwrap()));
 
+    create_dir_all(&dir).unwrap();
+
     let (width, height, trim) = if output.trim {
         // Calculate the actual animation size
         let rect = frames.iter().fold(
@@ -191,8 +193,6 @@ pub fn render_animation(
     } else {
         (width, height, None)
     };
-
-    create_dir_all(&output.directory).unwrap();
 
     let mut gif = File::create(&gif_path).unwrap();
     let mut gif_encoder = gif::Encoder::new(&mut gif, width as u16, height as u16, &[]).unwrap();
