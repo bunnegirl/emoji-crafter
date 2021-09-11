@@ -25,7 +25,7 @@ impl From<&Project> for Document {
         let document = roxmltree::Document::parse(&svg)
             .expect("error reading emojiset document, there may be syntax errors");
 
-        let emojis = document
+        let mut emojis = document
             .descendants()
             .fold(IndexMap::new(), |mut emojis, node| {
                 if node.has_tag_name("desc") && node.has_children() {
@@ -57,6 +57,18 @@ impl From<&Project> for Document {
 
                 emojis
             });
+
+        // Make sure animation frames are sorted by position
+        emojis.iter_mut().for_each(|(_, emoji)| {
+            if let Emoji::Animation { frames, .. } = emoji {
+                frames.sort_by(|a, b| {
+                    let a = a.position().unwrap();
+                    let b = b.position().unwrap();
+
+                    a.cmp(&b)
+                });
+            }
+        });
 
         Self { svg, emojis }
     }
@@ -158,6 +170,13 @@ impl Emoji {
         match self {
             Emoji::Animation { frames, .. } => frames.clone(),
             _ => Vec::new(),
+        }
+    }
+
+    pub fn position(&self) -> Option<usize> {
+        match self {
+            Emoji::Frame { position, .. } => Some(*position),
+            _ => None,
         }
     }
 }

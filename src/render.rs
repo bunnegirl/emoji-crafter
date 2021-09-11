@@ -154,7 +154,7 @@ pub fn render_image(emoji: &Emoji, pixmap: &Pixmap, theme: &Theme, output: &Outp
         pixmap.clone()
     };
 
-    println!("writing image to {}", path.to_str().unwrap());
+    println!("Writing emoji to {}", path.to_str().unwrap());
     pixmap.save_png(path).unwrap();
 }
 
@@ -206,8 +206,8 @@ pub fn render_animation(
 
     gif_encoder.set_repeat(gif::Repeat::Infinite).unwrap();
 
-    println!("writing animation to {}", webp_path.to_str().unwrap());
-    println!("writing animation to {}", gif_path.to_str().unwrap());
+    println!("Writing emoji to {}", webp_path.to_str().unwrap());
+    println!("Writing emoji to {}", gif_path.to_str().unwrap());
 
     for (_, delay, pixmap) in frames {
         let mut pixmap = if let Some(trim) = trim {
