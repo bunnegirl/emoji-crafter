@@ -6,10 +6,10 @@ pub struct Project {
     #[serde(skip)]
     pub path: PathBuf,
     pub emojiset: Emojiset,
-    #[serde(alias = "output")]
-    pub outputs: Vec<Output>,
     #[serde(alias = "theme")]
     pub themes: Vec<Theme>,
+    #[serde(alias = "output")]
+    pub outputs: Vec<Output>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

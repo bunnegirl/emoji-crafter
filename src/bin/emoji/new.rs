@@ -22,22 +22,9 @@ impl Command {
 
         create_dir_all(&theme_path).unwrap();
 
-        let emojiset_document = path
-            .join("emojiset.svg")
-            .strip_prefix(&path)
-            .unwrap()
-            .to_path_buf();
-        let emojiset_stylesheet = path
-            .join("emojiset.css")
-            .strip_prefix(&path)
-            .unwrap()
-            .to_path_buf();
-        let theme_stylesheet = path
-            .join("themes")
-            .join("theme.css")
-            .strip_prefix(&path)
-            .unwrap()
-            .to_path_buf();
+        let emojiset_document = PathBuf::from("emojiset.svg");
+        let emojiset_stylesheet = PathBuf::from("emojiset.css");
+        let theme_stylesheet = PathBuf::from("themes").join(format!("{}.css", &name));
 
         touch(&path.join(&emojiset_document)).unwrap();
         touch(&path.join(&emojiset_stylesheet)).unwrap();
@@ -46,11 +33,11 @@ impl Command {
         let outputs = vec![
             Output {
                 trim: false,
-                directory: path.join("original"),
+                directory: "original".into(),
             },
             Output {
                 trim: true,
-                directory: path.join("trimmed"),
+                directory: "trimmed".into(),
             },
         ];
         let themes = vec![Theme {
@@ -65,13 +52,37 @@ impl Command {
         let project = Project {
             path: path.clone(),
             emojiset,
-            outputs,
             themes,
+            outputs,
         };
 
         let manifest = path.join("emoji.toml");
 
-        std::fs::write(manifest, toml::to_string(&project).unwrap()).unwrap();
+        std::fs::write(&manifest, toml::to_string(&project).unwrap()).unwrap();
+        std::fs::write(
+            path.join(&project.emojiset.document),
+            include_str!("../../../tpl/emojiset.svg"),
+        )
+        .unwrap();
+        std::fs::write(
+            path.join(&project.emojiset.stylesheet),
+            include_str!("../../../tpl/emojiset.css"),
+        )
+        .unwrap();
+        std::fs::write(
+            path.join(&project.themes[0].stylesheet),
+            include_str!("../../../tpl/theme.css"),
+        )
+        .unwrap();
+
+        println!(
+            "Created new emojiset project in {}",
+            manifest
+                .strip_prefix(std::env::current_dir().unwrap())
+                .unwrap()
+                .to_str()
+                .unwrap()
+        );
     }
 }
 
