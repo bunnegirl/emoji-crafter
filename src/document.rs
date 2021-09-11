@@ -35,7 +35,7 @@ impl From<&Project> for Document {
                         let emoji = emoji.with_id(&id);
 
                         // Insert frame into parent emoji
-                        if let Emoji::FrameWithId { .. } = emoji {
+                        if let Emoji::Frame { .. } = emoji {
                             let parent_id =
                                 get_parent_id(&node).expect("missing parent id for frame");
 
@@ -43,7 +43,7 @@ impl From<&Project> for Document {
                                 .get_mut(&parent_id)
                                 .expect("missing parent for frame");
 
-                            if let Emoji::AnimationWithId { frames, .. } = parent {
+                            if let Emoji::Animation { frames, .. } = parent {
                                 frames.push(emoji);
                             }
                         } else {
@@ -93,32 +93,20 @@ fn get_parent_id(node: &Node) -> Option<String> {
 pub enum Emoji {
     #[serde(alias = "animated")]
     Animation {
-        name: String,
-    },
-    #[serde(rename = "animation", alias = "animated")]
-    AnimationWithId {
-        #[serde(skip_serializing)]
+        #[serde(skip)]
         id: String,
         name: String,
+        #[serde(skip_deserializing)]
         frames: Vec<Emoji>,
     },
     #[serde(alias = "static")]
     Image {
-        name: String,
-    },
-    #[serde(rename = "image", alias = "static")]
-    ImageWithId {
-        #[serde(skip_serializing)]
+        #[serde(skip)]
         id: String,
         name: String,
     },
     Frame {
-        delay: usize,
-        position: usize,
-    },
-    #[serde(rename = "frame")]
-    FrameWithId {
-        #[serde(skip_serializing)]
+        #[serde(skip)]
         id: String,
         delay: usize,
         position: usize,
@@ -128,46 +116,44 @@ pub enum Emoji {
 impl Emoji {
     pub fn with_id(self, id: &str) -> Self {
         match &self {
-            Emoji::Animation { name } => Emoji::AnimationWithId {
+            Emoji::Animation { name, frames, .. } => Emoji::Animation {
                 id: id.into(),
-                frames: Vec::new(),
                 name: name.clone(),
+                frames: frames.clone(),
             },
-            Emoji::Frame { delay, position } => Emoji::FrameWithId {
+            Emoji::Frame {
+                delay, position, ..
+            } => Emoji::Frame {
                 id: id.into(),
                 delay: *delay,
                 position: *position,
             },
-            Emoji::Image { name } => Emoji::ImageWithId {
+            Emoji::Image { name, .. } => Emoji::Image {
                 id: id.into(),
                 name: name.clone(),
             },
-            _ => unimplemented!("with id should only be called on raw items parsed from toml"),
         }
     }
 
     pub fn id(&self) -> Option<String> {
         match self {
-            Emoji::AnimationWithId { id, .. } => Some(id.clone()),
-            Emoji::FrameWithId { id, .. } => Some(id.clone()),
-            Emoji::ImageWithId { id, .. } => Some(id.clone()),
-            _ => None,
+            Emoji::Animation { id, .. } | Emoji::Frame { id, .. } | Emoji::Image { id, .. } => {
+                Some(id.clone())
+            }
         }
     }
 
     pub fn name(&self) -> Option<String> {
         match self {
-            Emoji::Animation { name } => Some(name.clone()),
-            Emoji::AnimationWithId { name, .. } => Some(name.clone()),
-            Emoji::Image { name } => Some(name.clone()),
-            Emoji::ImageWithId { name, .. } => Some(name.clone()),
+            Emoji::Animation { name, .. } => Some(name.clone()),
+            Emoji::Image { name, .. } => Some(name.clone()),
             _ => None,
         }
     }
 
     pub fn frames(&self) -> Vec<Emoji> {
         match self {
-            Emoji::AnimationWithId { frames, .. } => frames.clone(),
+            Emoji::Animation { frames, .. } => frames.clone(),
             _ => Vec::new(),
         }
     }

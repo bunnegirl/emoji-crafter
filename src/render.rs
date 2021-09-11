@@ -54,8 +54,8 @@ fn process_emoji(emoji: &Emoji, data: &[u8]) -> RenderableEmoji {
     let rtree = usvg::Tree::from_data(data, &opt.to_ref()).unwrap();
 
     match emoji {
-        Emoji::ImageWithId { .. } => process_image(emoji, rtree),
-        Emoji::AnimationWithId { .. } => process_animation(emoji, rtree),
+        Emoji::Image { .. } => process_image(emoji, rtree),
+        Emoji::Animation { .. } => process_animation(emoji, rtree),
         _ => unreachable!("should not be able to reach this"),
     }
 }
@@ -81,7 +81,7 @@ fn process_animation(emoji: &Emoji, rtree: Tree) -> RenderableEmoji {
         .frames()
         .iter()
         .map(|frame| {
-            if let Emoji::FrameWithId {
+            if let Emoji::Frame {
                 id,
                 delay,
                 position,
