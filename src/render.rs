@@ -1,6 +1,8 @@
 use crate::document::Emoji;
 use crate::manifest::{Output, Theme};
+use lazy_static::lazy_static;
 use rayon::prelude::*;
+use regex::Regex;
 use resvg::trim_transparency;
 use std::fs::{create_dir_all, File};
 use tiny_skia::{IntRect, Pixmap};
@@ -24,14 +26,17 @@ pub enum RenderableEmoji {
 /// Apply the theme to emoji and return renderable emoji
 pub fn process(svg: &str, theme: &Theme, emojis: &Vec<Emoji>) -> Vec<RenderableEmoji> {
     // Replace emojiset stylesheet with theme stylesheet:
+    lazy_static! {
+        static ref STYLE_ELEMENT_RE: Regex = Regex::new(r"(?s:<style.*?>.*?</style>)").unwrap();
+    }
+
     let mut svg = svg.to_string();
     let path = theme.stylesheet.canonicalize().unwrap();
     let css = std::fs::read_to_string(path).unwrap();
 
-    svg = svg.replace(
-        "<style>@import url(emojiset.css);</style>",
-        &format!("<style>{}</style>", css),
-    );
+    svg = STYLE_ELEMENT_RE
+        .replace(&svg, format!("<style>{}</style>", css))
+        .to_string();
 
     let data = svg.as_bytes();
 
