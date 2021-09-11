@@ -9,11 +9,11 @@ use structopt::StructOpt;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "emoji")]
 enum Opt {
-    /// Create a new project
+    /// Create a new emojiset
     New(new::Command),
-    /// Run the current project
+    /// Export emoji from the current emojiset
     Run(run::Command),
-    /// Show information about the current project
+    /// List emoji information from the current emojiset
     Info(info::Command),
 }
 

@@ -24,7 +24,7 @@
      units="px"
      scale-x="1" />
   <style>@import url(emojiset.css);</style>
-  <g>
+  <g id="g1">
     <desc>name = &quot;...&quot;
 type = &quot;image&quot;</desc>
     <rect

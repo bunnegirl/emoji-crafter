@@ -91,22 +91,24 @@ fn get_parent_id(node: &Node) -> Option<String> {
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "type")]
 pub enum Emoji {
-    #[serde(rename = "animated")]
+    #[serde(alias = "animated")]
     Animation {
         name: String,
     },
-    #[serde(rename = "animated")]
+    #[serde(rename = "animation", alias = "animated")]
     AnimationWithId {
+        #[serde(skip_serializing)]
         id: String,
         name: String,
         frames: Vec<Emoji>,
     },
-    #[serde(rename = "static")]
+    #[serde(alias = "static")]
     Image {
         name: String,
     },
-    #[serde(rename = "static")]
+    #[serde(rename = "image", alias = "static")]
     ImageWithId {
+        #[serde(skip_serializing)]
         id: String,
         name: String,
     },
@@ -116,6 +118,7 @@ pub enum Emoji {
     },
     #[serde(rename = "frame")]
     FrameWithId {
+        #[serde(skip_serializing)]
         id: String,
         delay: usize,
         position: usize,

@@ -22,10 +22,8 @@ impl Command {
 
         project.path = path;
 
-        let _doc = Document::from(&project);
+        let document = Document::from(&project);
 
-        todo!("implement a custom serialiser for document because toml-rs doesn't know how to handle enums");
-
-        // println!("{:#?}", toml::to_string_pretty(&doc.emojis));
+        println!("{}", toml::to_string_pretty(&document.emojis).unwrap());
     }
 }
