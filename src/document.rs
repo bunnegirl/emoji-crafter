@@ -121,9 +121,10 @@ pub enum Emoji {
         name: String,
     },
     Frame {
-        #[serde(skip)]
+        #[serde(skip_deserializing)]
         id: String,
         delay: usize,
+        #[serde(skip_serializing)]
         position: usize,
     },
 }
