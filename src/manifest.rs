@@ -27,7 +27,11 @@ pub struct Output {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Theme {
+    /// Human name for the theme
     pub name: String,
+    /// Prefix for exported filenames
+    pub prefix: String,
+    /// Path to the theme css stylesheet
     pub stylesheet: PathBuf,
 }
 

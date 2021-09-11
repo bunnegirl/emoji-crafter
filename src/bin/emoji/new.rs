@@ -42,6 +42,7 @@ impl Command {
         ];
         let themes = vec![Theme {
             name: name.clone(),
+            prefix: "".into(),
             stylesheet: theme_stylesheet,
         }];
         let emojiset = Emojiset {

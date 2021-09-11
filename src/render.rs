@@ -136,9 +136,11 @@ pub fn render_emoji(emoji: &RenderableEmoji, theme: &Theme, output: &Output) {
 }
 
 pub fn render_image(emoji: &Emoji, pixmap: &Pixmap, theme: &Theme, output: &Output) {
-    let path = output
-        .directory
-        .join(format!("{}{}.png", theme.name, emoji.name().unwrap()));
+    let path = output.directory.join(&theme.name).join(format!(
+        "{}{}.png",
+        theme.prefix,
+        emoji.name().unwrap()
+    ));
 
     create_dir_all(&output.directory).unwrap();
 
@@ -162,12 +164,16 @@ pub fn render_animation(
     theme: &Theme,
     output: &Output,
 ) {
-    let webp_path = output
-        .directory
-        .join(format!("{}{}.webp", theme.name, emoji.name().unwrap()));
-    let gif_path = output
-        .directory
-        .join(format!("{}{}.gif", theme.name, emoji.name().unwrap()));
+    let webp_path = output.directory.join(&theme.name).join(format!(
+        "{}{}.webp",
+        theme.prefix,
+        emoji.name().unwrap()
+    ));
+    let gif_path = output.directory.join(&theme.name).join(format!(
+        "{}{}.gif",
+        theme.prefix,
+        emoji.name().unwrap()
+    ));
 
     let (width, height, trim) = if output.trim {
         // Calculate the actual animation size
