@@ -1,12 +1,15 @@
 use crate::manifest::Project;
+use indexmap::IndexMap;
 use roxmltree::Node;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "snake_case")]
 pub struct Document {
+    #[serde(skip)]
     pub svg: String,
-    pub emojis: HashMap<String, Emoji>,
+    #[serde(with = "indexmap::serde_seq")]
+    pub emojis: IndexMap<String, Emoji>,
 }
 
 impl From<Project> for Document {
@@ -24,7 +27,7 @@ impl From<&Project> for Document {
 
         let emojis = document
             .descendants()
-            .fold(HashMap::new(), |mut emojis, node| {
+            .fold(IndexMap::new(), |mut emojis, node| {
                 if node.has_tag_name("desc") && node.has_children() {
                     if let Some(desc) = node.text() {
                         let emoji: Emoji = toml::from_str(desc).expect(
@@ -32,7 +35,7 @@ impl From<&Project> for Document {
                         );
                         let id = get_node_id(&node).expect("missing node id");
 
-                        let emoji = emoji.with_id(&id);
+                        let emoji = emoji.init(&id);
 
                         // Insert frame into parent emoji
                         if let Emoji::Frame { .. } = emoji {
@@ -114,7 +117,7 @@ pub enum Emoji {
 }
 
 impl Emoji {
-    pub fn with_id(self, id: &str) -> Self {
+    pub fn init(self, id: &str) -> Self {
         match &self {
             Emoji::Animation { name, frames, .. } => Emoji::Animation {
                 id: id.into(),
