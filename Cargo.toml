@@ -16,4 +16,3 @@ tiny-skia = "0.6"
 toml = "0.5"
 usvg = { path = "resvg/usvg" }
 webp-animation = "0.2"
-xmltree = "0.10"
