@@ -17,6 +17,7 @@ roxmltree = "0.14"
 serde = { version = "1.0", features = ["derive"] }
 structopt = "0.3"
 tiny-skia = "0.6"
+tinytemplate = "1.2"
 toml = "0.5"
 usvg = { path = "resvg/usvg" }
 webp-animation = "0.2"

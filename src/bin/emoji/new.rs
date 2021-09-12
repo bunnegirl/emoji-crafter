@@ -40,6 +40,7 @@ impl Command {
                 directory: "trimmed".into(),
             },
         ];
+        let templates = vec![];
         let themes = vec![Theme {
             name: name.clone(),
             prefix: "".into(),
@@ -53,6 +54,7 @@ impl Command {
         let project = Project {
             path: path.clone(),
             emojiset,
+            templates,
             themes,
             outputs,
         };

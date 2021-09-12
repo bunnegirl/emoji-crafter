@@ -6,9 +6,11 @@ pub struct Project {
     #[serde(skip)]
     pub path: PathBuf,
     pub emojiset: Emojiset,
-    #[serde(alias = "theme")]
+    #[serde(rename = "template", alias = "templates")]
+    pub templates: Vec<Template>,
+    #[serde(rename = "theme", alias = "themes")]
     pub themes: Vec<Theme>,
-    #[serde(alias = "output")]
+    #[serde(rename = "output", alias = "outputs")]
     pub outputs: Vec<Output>,
 }
 
@@ -23,6 +25,12 @@ pub struct Emojiset {
 pub struct Output {
     pub trim: bool,
     pub directory: PathBuf,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Template {
+    pub input: PathBuf,
+    pub output: PathBuf,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
