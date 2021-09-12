@@ -1,6 +1,3 @@
-/themes/*/tmp
-
-
-# Added by cargo
-
-/target
+.vscode
+target
+Cargo.lock

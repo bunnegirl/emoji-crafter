@@ -2,7 +2,7 @@
 name = "emoji-crafter"
 description = "a command line tool for automating emoji exports from svg, including animation"
 license-file = "license.md"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2018"
 
 [dependencies]
