@@ -2,21 +2,44 @@
 
 a command line tool for automating emoji exports from svg, including animation
 
-## emojiset files
-### emoji.toml
+<img src="demo.webp">
 
-the emojiset manifest file, used for defining what assets are used by the project, and what will be exported at build time.
+
+## installation
+
+emoji crafter can be installed using cargo:
+
+```sh
+cargo install emoji-crafter
+```
+
+
+## how it works
+### manifest format
+
+the emojiset manifest file (`emoji.toml`), used for defining what assets are used by the project, and what will be exported at build time.
 
 ```toml
 [emojiset]
 # human readable name for the project
 name = "my emojis"
+# the main svg file that contains
+# emoji to be exported
 document = "emojiset.svg"
+# editor stylesheet, imported in the
+# document and only used for styling
+# while editing
 stylesheet = "emojiset.css"
 
 [[theme]]
+# human readable name for the theme
 name = "my emojis"
+# all files exported using this
+# theme will have their filenames
+# prefixed with this
 prefix = ""
+# stylesheet used for rendering
+# emoji for the theme
 stylesheet = "themes/my emojis.css"
 
 [[output]]
@@ -34,8 +57,19 @@ trim = true
 directory = "trimmed"
 ```
 
+in addition to what's defined on project creation, you can also define templates to render text files:
 
-### emojiset.svg
+```toml
+[[template]]
+# path to the template
+input = "my template.tpl"
+# where the template should be saved
+output = "my document.md"
+```
+
+you can use <a href="https://docs.rs/tinytemplate/latest/tinytemplate/syntax/index.html">tinytemplate</a> syntax to build your templates.
+
+### emojiset format
 
 each emoji is a group that has a desc which contains some toml describing how that group should be exported. for a static image emoji, it looks like:
 
@@ -64,6 +98,5 @@ position = 1
 ```
 
 
-### emojiset.css
+### template format
 
-included directly into `emojiset.svg` for editing, it is not used at build time, instead the individual theme css is used. this separation allows for convienience styles while editing.
