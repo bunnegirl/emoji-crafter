@@ -10,7 +10,7 @@ categories = [
     "graphics",
     "template-engine",
 ]
-keywords = ["webp", "gif", "png", "svg", "image", "conversion", "animation"]
+keywords = ["webp", "gif", "png", "svg", "image"]
 license-file = "license.md"
 readme = "readme.md"
 edition = "2018"
