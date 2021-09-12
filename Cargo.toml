@@ -14,12 +14,12 @@ lazy_static = "1.4"
 notify = "4.0"
 rayon = "1.5"
 regex = "1.5"
-resvg = { path = "resvg" }
+resvg = { git = "https://github.com/bunnegirl/resvg.git" }
 roxmltree = "0.14"
 serde = { version = "1.0", features = ["derive"] }
 structopt = "0.3"
 tiny-skia = "0.6"
 tinytemplate = "1.2"
 toml = "0.5"
-usvg = { path = "resvg/usvg" }
+usvg = { git = "https://github.com/bunnegirl/resvg.git" }
 webp-animation = "0.2"
