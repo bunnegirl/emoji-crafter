@@ -1,5 +1,4 @@
-use crate::document::Document;
-use crate::manifest::*;
+use emoji_crafter::prelude::*;
 use std::path::PathBuf;
 use structopt::StructOpt;
 

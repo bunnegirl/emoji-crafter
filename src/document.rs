@@ -130,6 +130,14 @@ pub enum Emoji {
 }
 
 impl Emoji {
+    pub fn is_animation(&self) -> bool {
+        if let Emoji::Animation { .. } = self {
+            return true;
+        }
+
+        false
+    }
+
     pub fn init(self, id: &str) -> Self {
         match &self {
             Emoji::Animation { name, frames, .. } => Emoji::Animation {

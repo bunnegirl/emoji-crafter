@@ -1,4 +1,4 @@
-use crate::manifest::*;
+use emoji_crafter::prelude::*;
 use std::{fs::create_dir_all, path::PathBuf};
 use structopt::StructOpt;
 

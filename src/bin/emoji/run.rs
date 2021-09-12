@@ -1,20 +1,25 @@
-use crate::document::Document;
-use crate::manifest::*;
-use crate::render::{process, render};
-use emoji_crafter::document::Emoji;
+use emoji_crafter::prelude::*;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use serde::Serialize;
 use std::path::PathBuf;
 use std::thread;
 use structopt::StructOpt;
-use tinytemplate::TinyTemplate;
 
 #[derive(Serialize)]
 struct TemplateContext {
+    newline: String,
     emojiset: Emojiset,
-    emojis: Vec<Emoji>,
+    emojis: Vec<TemplateEmoji>,
     themes: Vec<Theme>,
     outputs: Vec<Output>,
+}
+
+#[derive(Serialize)]
+struct TemplateEmoji {
+    id: String,
+    name: String,
+    is_animation: bool,
+    is_image: bool,
 }
 
 #[derive(StructOpt, Debug)]
@@ -49,13 +54,8 @@ impl Command {
 
         if !project.templates.is_empty() {
             let project = project.clone();
+            let emojis = emojis.clone();
             let template_bar = bars.add(ProgressBar::new(project.templates.len() as u64));
-            let context = TemplateContext {
-                emojiset: project.emojiset.clone(),
-                emojis: emojis.clone(),
-                themes: project.themes.clone(),
-                outputs: project.outputs.clone(),
-            };
 
             template_bar.set_style(
                 ProgressStyle::default_bar()
@@ -67,34 +67,19 @@ impl Command {
             );
 
             threads.push(thread::spawn(move || {
-                for template in &project.templates {
-                    let mut template = template.clone();
-                    let mut renderer = TinyTemplate::new();
+                let renderable = template_renderer::process(&project, &emojis);
 
-                    template.input = project.path.join(template.input.clone());
-                    template.output = project.path.join(template.output.clone());
-
-                    let input = std::fs::read_to_string(&template.input).unwrap();
-
-                    renderer.add_template("current", &input).unwrap();
-
-                    template_bar.set_message(format!(
-                        "{}",
-                        template.output.file_name().unwrap().to_str().unwrap()
-                    ));
-                    template_bar.inc(1);
-
-                    match renderer.render("current", &context) {
-                        Ok(output) => {
-                            std::fs::write(&template.output, output).unwrap();
-                        }
-                        Err(error) => {
-                            println!("{}", error);
-
-                            std::process::exit(1);
-                        }
-                    }
-                }
+                template_renderer::render(
+                    &renderable,
+                    &project.templates,
+                    |template: &Template| {
+                        template_bar.set_message(format!(
+                            "{}",
+                            template.output.file_name().unwrap().to_str().unwrap()
+                        ));
+                        template_bar.inc(1);
+                    },
+                );
 
                 template_bar.finish_with_message("done");
             }));
@@ -136,14 +121,14 @@ impl Command {
 
                 theme.stylesheet = project.path.join(theme.stylesheet.clone());
 
-                let renderable = process(&document.svg, &theme, &emojis);
+                let renderable = emoji_renderer::process(&document.svg, &theme, &emojis);
 
                 for output in &project.outputs {
                     let mut output = output.clone();
 
                     output.directory = project.path.join(output.directory.clone());
 
-                    render(&renderable, &theme, &output, |emoji: &Emoji| {
+                    emoji_renderer::render(&renderable, &theme, &output, |emoji: &Emoji| {
                         emoji_bar.set_message(emoji.name().unwrap());
                         emoji_bar.inc(1);
                     });
