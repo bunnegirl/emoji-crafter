@@ -1,33 +1,15 @@
 use emoji_crafter::prelude::*;
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use serde::Serialize;
 use std::path::PathBuf;
 use std::thread;
 use structopt::StructOpt;
 
-#[derive(Serialize)]
-struct TemplateContext {
-    newline: String,
-    emojiset: Emojiset,
-    emojis: Vec<TemplateEmoji>,
-    themes: Vec<Theme>,
-    outputs: Vec<Output>,
-}
-
-#[derive(Serialize)]
-struct TemplateEmoji {
-    id: String,
-    name: String,
-    is_animation: bool,
-    is_image: bool,
-}
-
-#[derive(StructOpt, Debug)]
+#[derive(Clone, StructOpt, Debug)]
 pub struct Command {
     /// Name of the project
     #[structopt(default_value = "./")]
     #[structopt(parse(try_from_str = ProjectPath::validate))]
-    path: PathBuf,
+    pub(crate) path: PathBuf,
 }
 
 impl Command {
@@ -40,6 +22,8 @@ impl Command {
             .expect("error reading emoji.toml, there may be a syntax error");
 
         project.path = path;
+
+        println!("Building {} emojiset...\n", project.emojiset.name);
 
         let document = Document::from(&project);
         let emojis: Vec<_> = document
