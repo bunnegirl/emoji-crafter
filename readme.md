@@ -114,3 +114,5 @@ delay = 60
 # animation timeline position
 position = 1
 ```
+
+<sup>yes i am allergic to capital letters, no i will not spell bunne correctly</sup>
