@@ -1,7 +1,10 @@
 use crate::document::Document;
 use crate::manifest::*;
 use crate::render::{process, render};
+use emoji_crafter::document::Emoji;
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::path::PathBuf;
+use std::thread;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -24,26 +27,68 @@ impl Command {
         project.path = path;
 
         let document = Document::from(&project);
-        let emojis = document
+        let emojis: Vec<_> = document
             .emojis
             .iter()
             .map(|(_, emoji)| emoji.clone())
             .collect();
 
-        for theme in &project.themes {
-            let mut theme = theme.clone();
+        let bars = MultiProgress::new();
+        let theme_bar = bars.add(ProgressBar::new(project.themes.len() as u64));
 
-            theme.stylesheet = project.path.join(theme.stylesheet.clone());
+        theme_bar.set_style(
+            ProgressStyle::default_bar()
+                .template(&format!(
+                    "{: >10} {{bar:20.cyan/blue}} {{pos:>7}}/{{len:7}} {{msg}}",
+                    "themes"
+                ))
+                .progress_chars("##-"),
+        );
 
-            let renderable = process(&document.svg, &theme, &emojis);
+        let emoji_bar = bars.add(ProgressBar::new(
+            (emojis.len() * 2 * project.themes.len()) as u64,
+        ));
 
-            for output in &project.outputs {
-                let mut output = output.clone();
+        emoji_bar.set_style(
+            ProgressStyle::default_bar()
+                .template(&format!(
+                    "{: >10} {{bar:20.cyan/blue}} {{pos:>7}}/{{len:7}} {{msg}}",
+                    "emojis"
+                ))
+                .progress_chars("##-"),
+        );
 
-                output.directory = project.path.join(output.directory.clone());
+        let main = thread::spawn(move || {
+            theme_bar.set_position(0);
+            emoji_bar.set_position(0);
 
-                render(&renderable, &theme, &output);
+            for theme in &project.themes {
+                theme_bar.set_message(theme.name.clone());
+                theme_bar.inc(1);
+
+                let mut theme = theme.clone();
+
+                theme.stylesheet = project.path.join(theme.stylesheet.clone());
+
+                let renderable = process(&document.svg, &theme, &emojis);
+
+                for output in &project.outputs {
+                    let mut output = output.clone();
+
+                    output.directory = project.path.join(output.directory.clone());
+
+                    render(&renderable, &theme, &output, |emoji: &Emoji| {
+                        emoji_bar.set_message(emoji.name().unwrap());
+                        emoji_bar.inc(1);
+                    });
+                }
             }
-        }
+
+            emoji_bar.finish();
+            theme_bar.finish();
+        });
+
+        bars.join().unwrap();
+        main.join().unwrap();
     }
 }

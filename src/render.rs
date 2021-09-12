@@ -117,17 +117,34 @@ fn process_animation(emoji: &Emoji, rtree: Tree) -> RenderableEmoji {
     }
 }
 
+pub trait OnProgress<'a> = Fn(&'a Emoji) -> () + Sync + Send;
+
 /// Render emoji and write them to disk
-pub fn render(emoji: &Vec<RenderableEmoji>, theme: &Theme, output: &Output) {
-    emoji.par_iter().for_each(|emoji| {
-        render_emoji(emoji, theme, output);
+pub fn render<'a, F>(
+    emojis: &'a Vec<RenderableEmoji>,
+    theme: &Theme,
+    output: &Output,
+    on_progress: F,
+) where
+    F: OnProgress<'a>,
+{
+    emojis.par_iter().for_each(|emoji| {
+        render_emoji(emoji, theme, output, &on_progress);
     });
 }
 
-pub fn render_emoji(emoji: &RenderableEmoji, theme: &Theme, output: &Output) {
+pub fn render_emoji<'a, F>(
+    emoji: &'a RenderableEmoji,
+    theme: &Theme,
+    output: &Output,
+    on_progress: F,
+) where
+    F: OnProgress<'a>,
+{
     match emoji {
         RenderableEmoji::Image { emoji, pixmap } => {
             render_image(emoji, pixmap, theme, output);
+            on_progress(emoji);
         }
         RenderableEmoji::Animation {
             emoji,
@@ -154,7 +171,7 @@ pub fn render_image(emoji: &Emoji, pixmap: &Pixmap, theme: &Theme, output: &Outp
         pixmap.clone()
     };
 
-    println!("Writing emoji to {}", path.to_str().unwrap());
+    // println!("Writing emoji to {}", path.to_str().unwrap());
     pixmap.save_png(path).unwrap();
 }
 
@@ -206,8 +223,8 @@ pub fn render_animation(
 
     gif_encoder.set_repeat(gif::Repeat::Infinite).unwrap();
 
-    println!("Writing emoji to {}", webp_path.to_str().unwrap());
-    println!("Writing emoji to {}", gif_path.to_str().unwrap());
+    // println!("Writing emoji to {}", webp_path.to_str().unwrap());
+    // println!("Writing emoji to {}", gif_path.to_str().unwrap());
 
     for (_, delay, pixmap) in frames {
         let mut pixmap = if let Some(trim) = trim {
