@@ -9,7 +9,8 @@ the emojiset manifest file, used for defining what assets are used by the projec
 
 ```toml
 [emojiset]
-name = "my emojis"  # human readable name for the project
+# human readable name for the project
+name = "my emojis"
 document = "emojiset.svg"
 stylesheet = "emojiset.css"
 
@@ -19,15 +20,17 @@ prefix = ""
 stylesheet = "themes/my emojis.css"
 
 [[output]]
-trim = false        # not all platforms work well with
-                    # emoji that aren't square, so the
-                    # option to trim is disabled
+# not all platforms work well with
+# emoji that aren't square, so the
+# option to trim is disabled
+trim = false
 directory = "original"
 
 [[output]]
-trim = true         # some platforms work best with the
-                    # transparent parts cropped from
-                    # the emoji
+# some platforms work best with the
+# transparent parts cropped from
+# the emoji
+trim = true
 directory = "trimmed"
 ```
 
@@ -38,8 +41,9 @@ each emoji is a group that has a desc which contains some toml describing how th
 
 ```toml
 type = "image"
-name = "bunne"  # name of the emoji, prefixed with
-                # a theme name on export
+# name of the emoji, prefixed with
+# a theme name on export
+name = "bunne"
 ```
 
 animations are much the same:
@@ -53,8 +57,10 @@ however they also contain groups which make up the individual frames of the anim
 
 ```toml
 type = "frame"
-delay = 60      # delay before the next frame in ms
-position = 1    # animation timeline position
+# delay before the next frame in ms
+delay = 60
+# animation timeline position
+position = 1
 ```
 
 
