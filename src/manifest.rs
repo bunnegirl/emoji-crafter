@@ -102,7 +102,7 @@ impl std::fmt::Display for NewProjectPath {
         use NewProjectPath::*;
 
         match self {
-            AlreadyExists => write!(f, "directory already exists, try using `init`"),
+            AlreadyExists => write!(f, "directory already exists"),
             InvalidName => write!(f, "could not create the project directory"),
         }
     }
