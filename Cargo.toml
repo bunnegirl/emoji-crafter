@@ -1,9 +1,18 @@
 [package]
 name = "emoji-crafter"
+version = "0.1.1"
 description = "a command line tool for automating emoji exports from svg, including animation"
+authors = ["bunnegirl <hi@bunnegirl.solutions>"]
+repository = "https://github.com/bunnegirl/emoji-crafter"
+categories = [
+    "command-line-utilities",
+    "encoding",
+    "graphics",
+    "template-engine",
+]
+keywords = ["webp", "gif", "png", "svg", "image", "conversion", "animation"]
 license-file = "license.md"
 readme = "readme.md"
-version = "0.1.1"
 edition = "2018"
 
 [dependencies]
