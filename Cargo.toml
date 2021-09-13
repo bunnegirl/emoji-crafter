@@ -1,6 +1,6 @@
 [package]
 name = "emoji-crafter"
-version = "0.1.1"
+version = "0.1.2"
 description = "a command line tool for automating emoji exports from svg, including animation"
 authors = ["bunnegirl <hi@bunnegirl.solutions>"]
 repository = "https://github.com/bunnegirl/emoji-crafter"
@@ -24,12 +24,12 @@ lazy_static = "1.4"
 notify = "4.0"
 rayon = "1.5"
 regex = "1.5"
-resvg = "0.17"
+resvg = "0.18"
 roxmltree = "0.14"
 serde = { version = "1.0", features = ["derive"] }
 structopt = "0.3"
 tiny-skia = "0.6"
 tinytemplate = "1.2"
 toml = "0.5"
-usvg = "0.17"
+usvg = "0.18"
 webp-animation = "0.2"
