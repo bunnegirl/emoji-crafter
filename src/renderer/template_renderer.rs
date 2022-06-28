@@ -26,28 +26,32 @@ pub struct RenderableEmoji {
 pub trait OnProgress<'a> = Fn(&'a Template) -> () + Sync + Send;
 
 pub fn process(project: &Project, emojis: &Vec<Emoji>) -> Renderable {
+    let mut renderable_emoji: Vec<RenderableEmoji> = emojis
+        .par_iter()
+        .filter_map(|emoji| match emoji {
+            Emoji::Animation { id, name, .. } => Some(RenderableEmoji {
+                id: id.clone(),
+                name: name.clone(),
+                is_animation: true,
+                is_image: false,
+            }),
+            Emoji::Image { id, name, .. } => Some(RenderableEmoji {
+                id: id.clone(),
+                name: name.clone(),
+                is_animation: false,
+                is_image: true,
+            }),
+            _ => None,
+        })
+        .collect();
+
+    renderable_emoji.par_sort_by(|a, b| a.name.partial_cmp(&b.name).unwrap());
+
     Renderable {
         path: project.path.clone(),
         newline: "\n".into(),
         emojiset: project.emojiset.clone(),
-        emojis: emojis
-            .par_iter()
-            .filter_map(|emoji| match emoji {
-                Emoji::Animation { id, name, .. } => Some(RenderableEmoji {
-                    id: id.clone(),
-                    name: name.clone(),
-                    is_animation: true,
-                    is_image: false,
-                }),
-                Emoji::Image { id, name, .. } => Some(RenderableEmoji {
-                    id: id.clone(),
-                    name: name.clone(),
-                    is_animation: false,
-                    is_image: true,
-                }),
-                _ => None,
-            })
-            .collect(),
+        emojis: renderable_emoji,
         themes: project.themes.clone(),
         outputs: project.outputs.clone(),
     }
@@ -78,6 +82,6 @@ where
             }
         }
 
-        on_progress(&template);
+        on_progress(template);
     });
 }
