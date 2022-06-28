@@ -65,20 +65,17 @@ impl Command {
                 .expect("error watching emojiset template");
         }
 
-        let command = BuildCommand {
-            path: project.path.clone(),
-        };
+        let command = BuildCommand { path: project.path };
 
         build(command.clone());
 
         loop {
             match rx.recv() {
-                Ok(event) => match event {
-                    DebouncedEvent::Write(_) => {
+                Ok(event) => {
+                    if let DebouncedEvent::Write(_) = event {
                         build(command.clone());
                     }
-                    _ => {}
-                },
+                }
                 Err(e) => println!("watch error: {:?}", e),
             }
         }

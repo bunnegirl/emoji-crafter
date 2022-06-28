@@ -47,7 +47,7 @@ impl Command {
             stylesheet: theme_stylesheet,
         }];
         let emojiset = Emojiset {
-            name: name.clone(),
+            name,
             document: emojiset_document,
             stylesheet: emojiset_stylesheet,
         };

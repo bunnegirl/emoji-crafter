@@ -23,7 +23,9 @@ pub struct RenderableEmoji {
     is_image: bool,
 }
 
-pub trait OnProgress<'a> = Fn(&'a Template) -> () + Sync + Send;
+pub trait OnProgress<'a>: Fn(&'a Template) {}
+
+impl<'a, T> OnProgress<'a> for T where T: Fn(&'a Template) {}
 
 pub fn process(project: &Project, emojis: &Vec<Emoji>) -> Renderable {
     let mut renderable_emoji: Vec<RenderableEmoji> = emojis
@@ -59,7 +61,7 @@ pub fn process(project: &Project, emojis: &Vec<Emoji>) -> Renderable {
 
 pub fn render<'a, F>(context: &Renderable, templates: &'a Vec<Template>, on_progress: F)
 where
-    F: OnProgress<'a>,
+    F: OnProgress<'a> + Sync + Send,
 {
     templates.par_iter().for_each(|template| {
         let mut renderer = TinyTemplate::new();

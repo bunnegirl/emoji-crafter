@@ -42,14 +42,15 @@ pub fn process(svg: &str, theme: &Theme, emojis: &Vec<Emoji>) -> Vec<RenderableE
 
     emojis
         .par_iter()
-        .map(|emoji| process_emoji(&emoji, data))
+        .map(|emoji| process_emoji(emoji, data))
         .collect()
 }
 
 fn process_emoji(emoji: &Emoji, data: &[u8]) -> RenderableEmoji {
-    let mut opt = usvg::Options::default();
-
-    opt.keep_named_groups = true;
+    let opt = usvg::Options {
+        keep_named_groups: true,
+        ..Default::default()
+    };
 
     let rtree = usvg::Tree::from_data(data, &opt.to_ref()).unwrap();
 
@@ -87,7 +88,7 @@ fn process_animation(emoji: &Emoji, rtree: Tree) -> RenderableEmoji {
                 position,
             } = &frame
             {
-                let node = rtree.node_by_id(&id).unwrap();
+                let node = rtree.node_by_id(id).unwrap();
                 let bbox = node.calculate_bbox().unwrap();
                 let mut pixmap = Pixmap::new(bbox.width() as u32, bbox.height() as u32).unwrap();
 
@@ -117,7 +118,9 @@ fn process_animation(emoji: &Emoji, rtree: Tree) -> RenderableEmoji {
     }
 }
 
-pub trait OnProgress<'a> = Fn(&'a Emoji) -> () + Sync + Send;
+pub trait OnProgress<'a>: Fn(&'a Emoji) {}
+
+impl<'a, T> OnProgress<'a> for T where T: Fn(&'a Emoji) {}
 
 /// Render emoji and write them to disk
 pub fn render<'a, F>(
@@ -126,7 +129,7 @@ pub fn render<'a, F>(
     output: &Output,
     on_progress: F,
 ) where
-    F: OnProgress<'a>,
+    F: OnProgress<'a> + Sync + Send,
 {
     emojis.par_iter().for_each(|emoji| {
         render_emoji(emoji, theme, output, &on_progress);
@@ -228,7 +231,7 @@ pub fn render_animation(
 
     for (_, delay, pixmap) in frames {
         let mut pixmap = if let Some(trim) = trim {
-            pixmap.clone_rect(trim.clone()).unwrap()
+            pixmap.clone_rect(trim).unwrap()
         } else {
             pixmap.clone()
         };

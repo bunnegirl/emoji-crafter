@@ -47,7 +47,7 @@ impl Command {
                         "{: >10} {{bar:20.green/dim}} {{pos:>7}}/{{len:7}} {{msg}}",
                         "templates"
                     ))
-                    .progress_chars(&bar_characters),
+                    .progress_chars(bar_characters),
             );
 
             threads.push(thread::spawn(move || {
@@ -57,10 +57,15 @@ impl Command {
                     &renderable,
                     &project.templates,
                     |template: &Template| {
-                        template_bar.set_message(format!(
-                            "{}",
-                            template.output.file_name().unwrap().to_str().unwrap()
-                        ));
+                        template_bar.set_message(
+                            template
+                                .output
+                                .file_name()
+                                .unwrap()
+                                .to_str()
+                                .unwrap()
+                                .to_string(),
+                        );
                         template_bar.inc(1);
                     },
                 );
@@ -77,7 +82,7 @@ impl Command {
                     "{: >10} {{bar:20.green/dim}} {{pos:>7}}/{{len:7}} {{msg}}",
                     "themes"
                 ))
-                .progress_chars(&bar_characters),
+                .progress_chars(bar_characters),
         );
 
         let emoji_bar = bars.add(ProgressBar::new(
@@ -90,7 +95,7 @@ impl Command {
                     "{: >10} {{bar:20.green/dim}} {{pos:>7}}/{{len:7}} {{msg}}",
                     "emojis"
                 ))
-                .progress_chars(&bar_characters),
+                .progress_chars(bar_characters),
         );
 
         threads.push(thread::spawn(move || {
